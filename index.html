@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Data Realtime Kehadiran</title>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script type="text/javascript">
+    google.charts.load('current', {'packages':['table']});
+    google.charts.setOnLoadCallback(drawTable);
+
+    function drawTable() {
+      var query = new google.visualization.Query(
+        'https://docs.google.com/spreadsheets/d/2PACX-1vRbjG6fYSmO8e_D4Sxi5mRySBG8n5_11oLfD8gjB-1i3fKldL5qda4Ff4J9LnkEKMFUqgxflydTXwD/gviz/tq?sheet=Sheet1&range=A:D'
+      );
+      query.send(handleQueryResponse);
+    }
+
+    function handleQueryResponse(response) {
+      if (response.isError()) {
+        document.getElementById('table_div').innerHTML =
+          'Error: ' + response.getMessage() + ' ' + response.getDetailedMessage();
+        return;
+      }
+      var data = response.getDataTable();
+      var table = new google.visualization.Table(document.getElementById('table_div'));
+      table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
+    }
+  </script>
+</head>
+<body>
+  <h2>Monitor Kehadiran Siswa</h2>
+  <div id="table_div">Loading...</div>
+</body>
+</html>

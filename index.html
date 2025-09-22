@@ -2,34 +2,53 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Data Realtime Kehadiran</title>
-  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-  <script type="text/javascript">
-    google.charts.load('current', {'packages':['table']});
-    google.charts.setOnLoadCallback(drawTable);
-
-    function drawTable() {
-      var query = new google.visualization.Query(
-        'https://docs.google.com/spreadsheets/d/2PACX-1vRbjG6fYSm08e_D4Sxi5mRySBG8n5_11oLfD8gjB-1i3fKldL5qda4Ff4J9Lnk-EKMFUqgxfIydTXwD/gviz/tq?sheet=Sheet1&range=A:D'
-      );
-      query.send(handleQueryResponse);
+  <title>Realtime Kehadiran Siswa</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
     }
-
-    function handleQueryResponse(response) {
-      if (response.isError()) {
-        document.getElementById('table_div').innerHTML =
-          'Error: ' + response.getMessage() + ' ' + response.getDetailedMessage();
-        return;
-      }
-      var data = response.getDataTable();
-      var table = new google.visualization.Table(document.getElementById('table_div'));
-      table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
+    table {
+      border-collapse: collapse;
+      width: 100%;
     }
-  </script>
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background: #f2f2f2;
+    }
+  </style>
 </head>
 <body>
   <h2>Monitor Kehadiran Siswa</h2>
-  <div id="table_div">Loading...</div>
+  <table id="dataTable"></table>
+
+  <script>
+  async function loadData() {
+    let url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRbjG6fYSm08e_D4Sxi5mRySBG8n5_11oLfD8gjB-1i3fKldL5qda4Ff4J9Lnk-EKMFUqgxfIydTXwD/pub?gid=0&single=true&output=csv"; 
+    let response = await fetch(url);
+    let text = await response.text();
+    let rows = text.split("\n").map(r => r.split(","));
+
+    let table = document.getElementById("dataTable");
+    table.innerHTML = "";
+    rows.forEach((row, i) => {
+      let tr = document.createElement("tr");
+      row.forEach(cell => {
+        let td = document.createElement(i === 0 ? "th" : "td");
+        td.textContent = cell;
+        tr.appendChild(td);
+      });
+      table.appendChild(tr);
+    });
+  }
+
+  loadData();
+  setInterval(loadData, 5000); // refresh otomatis
+</script>
+
 </body>
 </html>
-

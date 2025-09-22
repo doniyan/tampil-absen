@@ -2,54 +2,89 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Realtime Kehadiran Siswa</title>
+  <title>Monitor Kehadiran Siswa</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 20px;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
     }
     table {
-      border-collapse: collapse;
       width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     th, td {
       border: 1px solid #ccc;
       padding: 8px;
-      text-align: left;
+      text-align: center;
     }
     th {
-      background: #f2f2f2;
+      background: #007BFF;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background: #f9f9f9;
     }
   </style>
 </head>
 <body>
-  <h2>Monitor Kehadiran Siswa</h2>
-  <table id="dataTable"></table>
+  <h2>📊 Monitor Kehadiran Siswa</h2>
+  <table>
+    <thead id="tableHead"></thead>
+    <tbody id="tableBody"></tbody>
+  </table>
 
   <script>
-  async function loadData() {
-    let url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRbjG6fYSm08e_D4Sxi5mRySBG8n5_11oLfD8gjB-1i3fKldL5qda4Ff4J9Lnk-EKMFUqgxfIydTXwD/pub?gid=0&single=true&output=csv"; 
-    let response = await fetch(url);
-    let text = await response.text();
-    let rows = text.split("\n").map(r => r.split(","));
+    const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRbjG6fYSm08e_D4Sxi5mRySBG8n5_11oLfD8gjB-1i3fKldL5qda4Ff4J9Lnk-EKMFUqgxfIydTXwD/pub?gid=0&single=true&output=csv";
 
-    let table = document.getElementById("dataTable");
-    table.innerHTML = "";
-    rows.forEach((row, i) => {
-      let tr = document.createElement("tr");
-      row.forEach(cell => {
-        let td = document.createElement(i === 0 ? "th" : "td");
-        td.textContent = cell;
-        tr.appendChild(td);
+    function fetchData() {
+      Papa.parse(sheetUrl, {
+        download: true,
+        header: true,
+        complete: function(results) {
+          const head = document.getElementById("tableHead");
+          const body = document.getElementById("tableBody");
+          head.innerHTML = "";
+          body.innerHTML = "";
+
+          // buat header tabel
+          if (results.data.length > 0) {
+            let headerRow = document.createElement("tr");
+            Object.keys(results.data[0]).forEach(col => {
+              let th = document.createElement("th");
+              th.textContent = col;
+              headerRow.appendChild(th);
+            });
+            head.appendChild(headerRow);
+          }
+
+          // buat isi tabel
+          results.data.forEach(row => {
+            if (Object.keys(row).length > 1) { // hindari row kosong
+              let tr = document.createElement("tr");
+              Object.values(row).forEach(val => {
+                let td = document.createElement("td");
+                td.textContent = val;
+                tr.appendChild(td);
+              });
+              body.appendChild(tr);
+            }
+          });
+        }
       });
-      table.appendChild(tr);
-    });
-  }
+    }
 
-  loadData();
-  setInterval(loadData, 1000); // refresh otomatis
-</script>
+    // jalankan pertama kali
+    fetchData();
 
+    // refresh otomatis tiap 5 detik
+    setInterval(fetchData, 5000);
+  </script>
 </body>
 </html>
-
